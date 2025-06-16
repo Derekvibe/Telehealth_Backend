@@ -11,7 +11,10 @@ const app = express();
 // Enable CORS for frontend + credentials (cookies)
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend origin
+    origin: [
+      "http://localhost:5173",
+      "telehealth-frontend.vercel.app",
+    ], // frontend origin
     credentials: true, // required to receive/set cookies
   })
 );
