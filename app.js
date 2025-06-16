@@ -13,7 +13,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "telehealth-frontend.vercel.app",
+      "https://telehealth-frontend.vercel.app",
     ], // frontend origin
     credentials: true, // required to receive/set cookies
   })
