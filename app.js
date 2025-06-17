@@ -27,7 +27,7 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api/v1/users", userRouter);
-app.use("/api/stream", StreamRoutes);
+app.use("/api/v1/stream", StreamRoutes);
 
 //Catch unknown routes
 app.all("/{*any}", (req, res, next) => {

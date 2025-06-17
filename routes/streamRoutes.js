@@ -23,7 +23,7 @@ const streamClient = StreamChat.getInstance(apiKey, apiSecret);
  */
 // CHANGED TO GET
 router.get("/get-token", protect, async (req, res) => {
-  // console.log(req.user);
+  console.log(req.user);
   try {
     const { _id, username } = req.user || {};
     // TRY LOOGING THE ID AND NAME FROM YOUR REQUEST FIRST
