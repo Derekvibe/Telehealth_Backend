@@ -73,6 +73,7 @@ router.post("/token", async (req, res) => {
       user: {
         id: userId,
         name: name,
+        role:"admin",
         image: `https://getstream.io/random_png/?name=${name}`,
       },
     });
