@@ -77,6 +77,7 @@ router.post("/token", async (req, res) => {
         image: `https://getstream.io/random_png/?name=${name}`,
       },
     });
+
   } catch (error) {
     console.error("Public token generation error:", error);
     res.status(500).json({ error: "Failed to generate token" });
@@ -84,3 +85,4 @@ router.post("/token", async (req, res) => {
 });
 
 module.exports = router;
+
