@@ -5,20 +5,18 @@ const globalErrorHandler = require("./controller/errorController");
 const AppError = require("./utils/appError");
 const userRouter = require("./routes/userRouters");
 const StreamRoutes = require("./routes/streamRoutes");
+const morgan = require("morgan");
 
 const app = express();
 
-// Enable CORS for frontend + credentials (cookies)
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://telehealth-frontend.vercel.app",
-    ], // frontend origin
+    origin: ["http://localhost:5173", "https://telehealth-frontend.vercel.app"], // frontend origin
     credentials: true, // required to receive/set cookies
   })
 );
 
+if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
 // Body parser (limit helps prevent DOS attacks)
 app.use(express.json({ limit: "10kb" }));
 

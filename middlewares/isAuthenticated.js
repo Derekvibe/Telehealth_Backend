@@ -33,7 +33,6 @@ const isAuthenticated = catchAsync(async (req, res, next) => {
     );
   }
 
-
   // 4. Check token payload integrity
   if (!decoded._id || !decoded.name) {
     return next(

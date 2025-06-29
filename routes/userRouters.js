@@ -10,7 +10,6 @@ const {
 } = require("../controller/authController");
 const isAuthenticated = require("../middlewares/isAuthenticated");
 
-
 const router = express.Router();
 
 router.post("/signup", signup);
@@ -20,7 +19,5 @@ router.post("/login", login);
 router.post("/logout", isAuthenticated, logout);
 router.post("/forget-password", forgetPassword);
 router.post("/reset-password", resetPassword);
-
-
 
 module.exports = router;

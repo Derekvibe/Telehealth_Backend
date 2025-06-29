@@ -1,6 +1,6 @@
 const express = require("express");
 const { StreamChat } = require("stream-chat");
-// const isAuthenticated = require("../middlewares/isAuthenticated");
+
 const protect = require("../middlewares/protect");
 
 const router = express.Router();
@@ -16,32 +16,23 @@ if (!apiKey || !apiSecret) {
 
 const streamClient = StreamChat.getInstance(apiKey, apiSecret);
 
-/**
- * @route   POST /api/stream/get-token
- * @desc    Generate a Stream token for authenticated users
- * @access  Private
- */
-// CHANGED TO GET
 router.get("/get-token", protect, async (req, res) => {
-  console.log(req.user);
   try {
-    const { _id, username } = req.user || {};
+    const { id, username } = req.user || {};
+    console.log(req.user.id, "User");
     // TRY LOOGING THE ID AND NAME FROM YOUR REQUEST FIRST
 
-    if (!_id || !username) {
+    if (!id || !username) {
       return res.status(400).json({ error: "Invalid user data" });
     }
 
-    const userId = _id.toString();
-    const user = { id: userId, username };
+    // const userId = _id.toString();
+    const user = { id, username };
 
     // Ensure user exists in Stream backend
     await streamClient.upsertUser(user);
-
     // Generate token
-    const token = streamClient.createToken(userId);
-
-    // ✅ Return both token and user so frontend can use `user.id`
+    const token = streamClient.createToken(id);
     res.status(200).json({ token, user });
   } catch (error) {
     console.error("Stream token generation error:", error);
@@ -73,11 +64,10 @@ router.post("/token", async (req, res) => {
       user: {
         id: userId,
         name: name,
-        role:"admin",
+        role: "admin",
         image: `https://getstream.io/random_png/?name=${name}`,
       },
     });
-
   } catch (error) {
     console.error("Public token generation error:", error);
     res.status(500).json({ error: "Failed to generate token" });
@@ -85,4 +75,3 @@ router.post("/token", async (req, res) => {
 });
 
 module.exports = router;
-
