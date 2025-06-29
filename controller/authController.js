@@ -4,13 +4,23 @@ const catchAsync = require("../utils/catchAsync");
 const generateOtp = require("../utils/generateOtp");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/email")
-
-
 const { StreamChat } = require("stream-chat");
-const streamClient = StreamChat.getInstance(
-  process.env.STREAM_API_KEY,
-  process.env.STREAM_API_SECRET
-);
+
+
+const apiKey = process.env.STREAM_API_KEY;
+const apiSecret = process.env.STREAM_API_SECRET;
+
+if (!apiKey || !apiSecret) {
+  throw new Error(
+    "Missing Stream credentials. Check your environment variables."
+  );
+}
+
+console.log(apiKey, "KEY");
+console.log(apiSecret, "Secret");
+
+const streamClient = StreamChat.getInstance(apiKey, apiSecret);
+
 
 // Helper function to sign JWT
 const signToken = (userId) => {
@@ -19,27 +29,17 @@ const signToken = (userId) => {
   });
 };
 
-
-//create token and cookies
-
-// const signToken = (id) => {
-//   return jwt.sign({ id }, process.env.JWT_SECRET, {
-//     expiresIn: process.env.JWT_EXPIRES_IN,
-//   });
-// };
-
 //function to create the token
 const createSendToken = (user, statusCode, res, message) => {
   const token = signToken(user._id);
 
-  //function to generate the cookie
   const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
 
     httponly: true,
-    secure: process.env.NODE_ENV === "production", //only secure in production
+    secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax",
   };
 
@@ -49,8 +49,7 @@ const createSendToken = (user, statusCode, res, message) => {
   user.passwordConfirm = undefined;
   user.otp = undefined;
 
-  //Stream Token Generation
-  const streamToken = streamClient.createToken(user._id.toString());
+  const streamToken = streamClient.createToken(user.id);
 
   //structure of the cookie response when sent to the user
   res.status(statusCode).json({
@@ -67,9 +66,7 @@ const createSendToken = (user, statusCode, res, message) => {
   });
 };
 
-
 //signup functionality
-
 exports.signup = catchAsync(async (req, res, next) => {
   const { email, password, passwordConfirm, username } = req.body;
 
@@ -79,7 +76,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
   const otp = generateOtp();
 
-  const otpExpires = Date.now() + 24 * 60 * 60 * 1000; //when thhe otp will expire (1 day)
+  const otpExpires = Date.now() + 24 * 60 * 60 * 1000;
 
   const newUser = await User.create({
     username,
@@ -214,7 +211,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // 3. Create JWT token
-  const token = signToken(user._id);
+  const token = signToken(user.id);
 
   // 4. Configure cookie options
   const cookieOptions = {
@@ -227,11 +224,6 @@ exports.login = catchAsync(async (req, res, next) => {
           1000
     ),
     httpOnly: true,
-    // secure: process.env.NODE_ENV === "production",
-    // sameSite: process.env.NODE_ENV === "production" ?
-    //  "None" : "Lax",
-
-    //set to false during or for local HTTP and cross-origin
     secure: false,
     sameSite: "Lax",
   };
@@ -241,10 +233,10 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // 6. Generate Stream token
   await streamClient.upsertUser({
-    id: user._id.toString(),
+    id: user.id,
     name: user.username,
   });
-  const streamToken = streamClient.createToken(user._id.toString());
+  const streamToken = streamClient.createToken(user.id);
 
   // 7. Remove sensitive fields
   user.password = undefined;
@@ -285,9 +277,8 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
 
-
   if (!user) {
-    return next(new AppError('No user found', 404));
+    return next(new AppError("No user found", 404));
   }
 
   const otp = generateOtp();
@@ -295,18 +286,17 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   user.resetPasswordOTP = otp;
   user.resetPasswordOTPExpires = Date.now() + 300000; // 5mins
 
-
   await user.save({ validateBeforeSave: false });
 
   try {
     await sendEmail({
       email: user.email,
       subject: "Your password Reset Otp (valid for 5min)",
-      html: `<h1>Your password reset Otp : ${otp}</h1>`
+      html: `<h1>Your password reset Otp : ${otp}</h1>`,
     });
-    
+
     res.status(200).json({
-      status: 'success',
+      status: "success",
       message: "Password reset otp has been sent to your email",
     });
   } catch (error) {
@@ -314,14 +304,13 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     user.resetPasswordOTPExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
-    return next(new AppError(
-      "There was an error sending the email. Please try again later"
-    ));
+    return next(
+      new AppError(
+        "There was an error sending the email. Please try again later"
+      )
+    );
   }
-
-
 });
-
 
 //reset password
 exports.resetPassword = catchAsync(async (req, res, next) => {
@@ -335,7 +324,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     resetPasswordOTP: otp,
     resetPasswordOTPExpires: { $gt: Date.now() },
   });
-  
+
   // console.log({ email, otp });
   // console.log(("User found?", user))
 
@@ -346,8 +335,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.resetPasswordOTP = undefined;
   user.resetPasswordOTPExpires = undefined;
 
-
   await user.save();
 
   createSendToken(user, 200, res, "Password reset Successfully");
-})
+});

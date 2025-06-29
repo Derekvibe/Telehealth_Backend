@@ -1,6 +1,6 @@
 //sends responds to the user whenever an error is caught and the error is sent to the user in a JSON format
 
-const errorHandlers = require('./globalErrorHandler')
+const errorHandlers = require("./globalErrorHandler");
 
 const {
   handleCastErrorDB,
@@ -25,6 +25,6 @@ module.exports = (err, req, res, next) => {
   res.status(error.statusCode).json({
     status: error.status,
     message: error.message,
-    ...(process.env.NODE_ENV === "development" && { error, stack: err.stack }),
+    ...(process.env.NODE_ENV === "production" && { error, stack: err.stack }),
   });
 };

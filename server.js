@@ -1,14 +1,12 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
-const dotenv = require("dotenv"); //to Manage our environment variable
+const dotenv = require("dotenv");
 
 dotenv.config({ path: "./config.env" });
-// console.log(process.env.NODE_ENV);
 
 const app = require("./app");
 
 const db = process.env.DB;
-//connect the application to database using MongoDB
 
 mongoose
   .connect(db)
@@ -20,7 +18,6 @@ mongoose
   });
 
 const port = process.env.PORT || 3000;
-// console.log(process.env.PORT)
 
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
