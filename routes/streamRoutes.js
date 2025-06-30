@@ -31,6 +31,12 @@ router.get("/get-token", protect, async (req, res) => {
 
     // Ensure user exists in Stream backend
     await streamClient.upsertUser(user);
+
+    // ✅ Add user to my_general_chat channel
+    const channel = streamClient.channel("messaging", "my_general_chat");
+    await channel.addMembers([id]);
+
+
     // Generate token
     const token = streamClient.createToken(id);
     res.status(200).json({ token, user });
@@ -57,6 +63,12 @@ router.post("/token", async (req, res) => {
     const user = { id: userId, name: userName };
 
     await streamClient.upsertUser(user);
+
+    // ✅ Add user to my_general_chat channel
+    const channel = streamClient.channel("messaging", "my_general_chat");
+    await channel.addMembers([userId]);
+
+    
     const token = streamClient.createToken(userId);
 
     res.status(200).json({
